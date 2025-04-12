@@ -6,7 +6,7 @@ CREATE TABLE users (
     name VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password TEXT, -- Apenas para login tradicional
-    phone VARCHAR(20),
+    phone VARCHAR(20) UNIQUE NOT NULL,
     google_id VARCHAR(255) UNIQUE, -- Apenas para login via Google
     profile_picture TEXT,
     city VARCHAR(100),
@@ -69,7 +69,7 @@ EXECUTE FUNCTION finalize_listings();
 
 -- Inserir dados na tabela users
 INSERT INTO users (id, name, email, phone, password, google_id, profile_picture, city, state) VALUES
-    (gen_random_uuid(), 'Alice Silva', 'alice@example.com', '$2a$10$bbB/dah1pHheRah2XMjKXOWCqS24laiCaAJ7x0uRfDvmRJ8SvL6Jy', NULL, NULL, 'São Paulo', 'SP'), -- senha 123456
+    (gen_random_uuid(), 'Alice Silva', 'alice@example.com', '63990637299', '$2a$10$bbB/dah1pHheRah2XMjKXOWCqS24laiCaAJ7x0uRfDvmRJ8SvL6Jy', NULL, NULL, 'São Paulo', 'SP'), -- senha 123456
     (gen_random_uuid(), 'Bruno Souza', 'bruno@example.com', '21987654321', NULL, 'google456', 'https://example.com/bruno.jpg', 'Rio de Janeiro', 'RJ'),
     (gen_random_uuid(), 'Carla Mendes', 'carla@example.com', '31987654321', NULL, 'google789', 'https://example.com/carla.jpg', 'Belo Horizonte', 'MG'),
     (gen_random_uuid(), 'Diego Rocha', 'diego@example.com', '41987654321', NULL, 'google101', 'https://example.com/diego.jpg', 'Curitiba', 'PR');
