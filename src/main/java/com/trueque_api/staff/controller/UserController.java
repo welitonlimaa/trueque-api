@@ -1,7 +1,9 @@
 package com.trueque_api.staff.controller;
 
 import com.trueque_api.staff.model.User;
-import com.trueque_api.staff.dto.UserDTO;
+import com.trueque_api.staff.dto.AuthResponseDTO;
+import com.trueque_api.staff.dto.PasswordUpdateDTO;
+import com.trueque_api.staff.dto.UserDataResponseDTO;
 import com.trueque_api.staff.service.UserService;
 import com.trueque_api.staff.security.JwtUtil;
 import org.springframework.http.ResponseEntity;
@@ -22,37 +24,36 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> register(@RequestBody User user) {
-        UserDTO userDTO = userService.register(user);
+    public ResponseEntity<AuthResponseDTO> register(@RequestBody User user) {
+        AuthResponseDTO userDTO = userService.register(user);
         return ResponseEntity.ok(userDTO);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDataResponseDTO> getById(@PathVariable UUID id, @RequestHeader("Authorization") String token) {
+        String authenticatedEmail = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+
+        UserDataResponseDTO user = userService.getById(id, authenticatedEmail);
+        return ResponseEntity.ok(user);
+    }
+
     @PutMapping("/{id}/data")
-    public ResponseEntity<User> update(@PathVariable UUID id, @RequestBody User updatedUser,
+    public ResponseEntity<UserDataResponseDTO> update(@PathVariable UUID id, @RequestBody User updatedUser,
                                        @RequestHeader("Authorization") String token) {
         String authenticatedEmail = jwtUtil.extractEmail(token.replace("Bearer ", ""));
 
-        User updated = userService.updateUserData(id, updatedUser, authenticatedEmail);
+        UserDataResponseDTO updated = userService.updateUserData(id, updatedUser, authenticatedEmail);
         return ResponseEntity.ok(updated);
     }
 
     @PutMapping("/{id}/password")
     public ResponseEntity<Void> updatePassword(@PathVariable UUID id, 
-                                            @RequestParam String oldPassword, 
-                                            @RequestParam String newPassword,
+                                            @RequestBody PasswordUpdateDTO passwordDataUpdated,
                                             @RequestHeader("Authorization") String token) {
         String authenticatedEmail = jwtUtil.extractEmail(token.replace("Bearer ", ""));
 
-        userService.updatePassword(id, oldPassword, newPassword, authenticatedEmail);
+        userService.updatePassword(id, passwordDataUpdated, authenticatedEmail);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getById(@PathVariable UUID id, @RequestHeader("Authorization") String token) {
-        String authenticatedEmail = jwtUtil.extractEmail(token.replace("Bearer ", ""));
-
-        User user = userService.getById(id, authenticatedEmail);
-        return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/{id}")
