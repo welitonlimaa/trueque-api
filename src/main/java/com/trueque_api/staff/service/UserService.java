@@ -1,6 +1,9 @@
 package com.trueque_api.staff.service;
 
-import com.trueque_api.staff.dto.UserDTO;
+import com.trueque_api.staff.dto.UserDataResponseDTO;
+import com.trueque_api.staff.dto.AuthResponseDTO;
+import com.trueque_api.staff.dto.PasswordUpdateDTO;
+import com.trueque_api.staff.exception.BadRequestException;
 import com.trueque_api.staff.exception.EmailAlreadyExistsException;
 import com.trueque_api.staff.exception.InvalidCredentialsException;
 import com.trueque_api.staff.exception.UserNotFoundException;
@@ -27,7 +30,7 @@ public class UserService {
         this.jwtUtil = jwtUtil;
     }
 
-    public UserDTO login(String email, String password) {
+    public AuthResponseDTO login(String email, String password) {
         User user = userRepository.findByEmail(email.toLowerCase())
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
 
@@ -37,14 +40,14 @@ public class UserService {
 
         String token = jwtUtil.generateToken(user.getEmail());
 
-        return UserDTO.builder()
+        return AuthResponseDTO.builder()
                 .name(user.getName())
                 .email(user.getEmail())
                 .token(token)
                 .build();
     }
 
-    public UserDTO register(User user) {
+    public AuthResponseDTO register(User user) {
         if (userRepository.findByEmail(user.getEmail().toLowerCase()).isPresent()) {
             throw new EmailAlreadyExistsException("Este email já está registrado.");
         }
@@ -57,46 +60,14 @@ public class UserService {
 
         String token = jwtUtil.generateToken(savedUser.getEmail());
 
-        return UserDTO.builder()
+        return AuthResponseDTO.builder()
             .email(savedUser.getEmail())
             .name(savedUser.getName())
             .token(token)
             .build();
     }
 
-    public User updateUserData(UUID id, User updatedUser, String authenticatedEmail) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
-        
-        if (!user.getEmail().equals(authenticatedEmail)) {
-            throw new UnauthorizedAccessException("Você não tem permissão para modificar esses dados.");
-        }
-        
-        user.setName(updatedUser.getName());
-        user.setPhone(updatedUser.getPhone());
-        user.setCity(updatedUser.getCity());
-        user.setState(updatedUser.getState());
-    
-        return userRepository.save(user);
-    }
-    
-    public void updatePassword(UUID id, String oldPassword, String newPassword, String authenticatedEmail) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
-        
-        if (!user.getEmail().equals(authenticatedEmail)) {
-            throw new UnauthorizedAccessException("Você não tem permissão para modificar a senha.");
-        }
-        
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new InvalidCredentialsException("Senha antiga incorreta.");
-        }
-        
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
-    }
-    
-    public User getById(UUID id, String authenticatedEmail) {
+    public UserDataResponseDTO getById(UUID id, String authenticatedEmail) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
         
@@ -104,7 +75,65 @@ public class UserService {
             throw new UnauthorizedAccessException("Você não tem permissão para visualizar esses dados.");
         }
         
-        return user;
+        return UserDataResponseDTO.builder()
+            .id(user.getId())
+            .email(user.getEmail())
+            .name(user.getName())
+            .phone(user.getPhone())
+            .googleId(user.getGoogleId())
+            .profilePicture(user.getProfilePicture())
+            .city(user.getCity())
+            .state(user.getState())
+            .build();
+    }
+
+    public UserDataResponseDTO updateUserData(UUID id, User updatedData, String authenticatedEmail) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
+        
+        if (!user.getEmail().equals(authenticatedEmail)) {
+            throw new UnauthorizedAccessException("Você não tem permissão para modificar esses dados.");
+        }
+        
+        user.setEmail(updatedData.getEmail());
+        user.setName(updatedData.getName());
+        user.setPhone(updatedData.getPhone());
+        user.setProfilePicture(updatedData.getProfilePicture());
+        user.setCity(updatedData.getCity());
+        user.setState(updatedData.getState());
+    
+        User userUpdated = userRepository.save(user);
+
+        return UserDataResponseDTO.builder()
+            .id(userUpdated.getId())
+            .email(userUpdated.getEmail())
+            .name(userUpdated.getName())
+            .phone(userUpdated.getPhone())
+            .googleId(userUpdated.getGoogleId())
+            .profilePicture(userUpdated.getProfilePicture())
+            .city(userUpdated.getCity())
+            .state(userUpdated.getState())
+            .build();
+    }
+    
+    public void updatePassword(UUID id, PasswordUpdateDTO passwordUpdateDTO, String authenticatedEmail) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
+        
+        if (!user.getEmail().equals(authenticatedEmail)) {
+            throw new UnauthorizedAccessException("Você não tem permissão para modificar a senha.");
+        }
+        
+        if (!passwordEncoder.matches(passwordUpdateDTO.getOldPassword(), user.getPassword())) {
+            throw new InvalidCredentialsException("Senha antiga incorreta.");
+        }
+
+        if (passwordEncoder.matches(passwordUpdateDTO.getNewPassword(), user.getPassword())) {
+            throw new BadRequestException("Senha igual a anterior.");
+        }
+        
+        user.setPassword(passwordEncoder.encode(passwordUpdateDTO.getNewPassword()));
+        userRepository.save(user);
     }
     
     public void delete(UUID id, String authenticatedEmail) {
