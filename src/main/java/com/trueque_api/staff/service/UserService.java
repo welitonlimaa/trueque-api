@@ -6,7 +6,7 @@ import com.trueque_api.staff.dto.PasswordUpdateDTO;
 import com.trueque_api.staff.exception.BadRequestException;
 import com.trueque_api.staff.exception.EmailAlreadyExistsException;
 import com.trueque_api.staff.exception.InvalidCredentialsException;
-import com.trueque_api.staff.exception.UserNotFoundException;
+import com.trueque_api.staff.exception.NotFoundException;
 import com.trueque_api.staff.exception.UnauthorizedAccessException;
 import com.trueque_api.staff.model.User;
 import com.trueque_api.staff.repository.UserRepository;
@@ -32,7 +32,7 @@ public class UserService {
 
     public AuthResponseDTO login(String email, String password) {
         User user = userRepository.findByEmail(email.toLowerCase())
-                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new InvalidCredentialsException("Senha incorreta.");
@@ -69,7 +69,7 @@ public class UserService {
 
     public UserDataResponseDTO getById(UUID id, String authenticatedEmail) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
         
         if (!user.getEmail().equals(authenticatedEmail)) {
             throw new UnauthorizedAccessException("Você não tem permissão para visualizar esses dados.");
@@ -89,7 +89,7 @@ public class UserService {
 
     public UserDataResponseDTO updateUserData(UUID id, User updatedData, String authenticatedEmail) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
         
         if (!user.getEmail().equals(authenticatedEmail)) {
             throw new UnauthorizedAccessException("Você não tem permissão para modificar esses dados.");
@@ -118,7 +118,7 @@ public class UserService {
     
     public void updatePassword(UUID id, PasswordUpdateDTO passwordUpdateDTO, String authenticatedEmail) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
         
         if (!user.getEmail().equals(authenticatedEmail)) {
             throw new UnauthorizedAccessException("Você não tem permissão para modificar a senha.");
@@ -138,7 +138,7 @@ public class UserService {
     
     public void delete(UUID id, String authenticatedEmail) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
         
         if (!user.getEmail().equals(authenticatedEmail)) {
             throw new UnauthorizedAccessException("Você não tem permissão para deletar este usuário.");
