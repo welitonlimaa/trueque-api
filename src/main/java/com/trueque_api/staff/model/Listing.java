@@ -41,6 +41,9 @@ public class Listing {
     @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ListingImage> images;
 
-    @ManyToMany(mappedBy = "listings")
-    private List<TradeOffer> tradeOffers;
+    @OneToMany(mappedBy = "offeredListing")
+    private List<TradeOffer> asOfferedListing;
+
+    @OneToMany(mappedBy = "requestedListing")
+    private List<TradeOffer> asRequestedListing;
 }
