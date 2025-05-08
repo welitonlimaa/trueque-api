@@ -42,13 +42,9 @@ CREATE TABLE trade_offers (
     status VARCHAR(20) DEFAULT 'pendente' CHECK (status IN ('pendente', 'aceita', 'recusada')),
     created_at TIMESTAMP DEFAULT NOW(),
     accepted_at TIMESTAMP,
-    rejected_at TIMESTAMP
-);
-
-CREATE TABLE listing_trade_offer (
-    listing_id UUID REFERENCES listings(id) ON DELETE CASCADE,
-    trade_offer_id UUID REFERENCES trade_offers(id) ON DELETE CASCADE,
-    PRIMARY KEY (listing_id, trade_offer_id)
+    rejected_at TIMESTAMP,
+    offered_listing_id UUID REFERENCES listings(id) ON DELETE CASCADE,
+    requested_listing_id UUID REFERENCES listings(id) ON DELETE CASCADE
 );
 
 -- Criar função para finalizar os anúncios e recusar outras ofertas ao aceitar uma proposta
@@ -113,3 +109,22 @@ INSERT INTO listing_images (id, listing_id, image_url) VALUES
     (gen_random_uuid(), (SELECT id FROM listings WHERE title = 'Bicicleta Caloi'), 'https://example.com/bike.jpg'),
     (gen_random_uuid(), (SELECT id FROM listings WHERE title = 'Sofá Retrátil'), 'https://example.com/sofa.jpg'),
     (gen_random_uuid(), (SELECT id FROM listings WHERE title = 'Videogame PS4'), 'https://example.com/ps4.jpg');
+
+-- Inserir ofertas de troca na tabela trade_offers
+INSERT INTO trade_offers (id, status, created_at, offered_listing_id, requested_listing_id)
+VALUES
+    (gen_random_uuid(), 'pendente', NOW(), 
+     (SELECT id FROM listings WHERE title = 'Notebook Dell'), 
+     (SELECT id FROM listings WHERE title = 'Bicicleta Caloi')),  -- Alice oferece o notebook e Bruno solicita a bicicleta
+
+    (gen_random_uuid(), 'pendente', NOW(), 
+     (SELECT id FROM listings WHERE title = 'Sofá Retrátil'), 
+     (SELECT id FROM listings WHERE title = 'Videogame PS4')),  -- Carla oferece o sofá e Diego solicita o PS4
+
+    (gen_random_uuid(), 'pendente', NOW(), 
+     (SELECT id FROM listings WHERE title = 'Videogame PS4'), 
+     (SELECT id FROM listings WHERE title = 'Bicicleta Caloi')),  -- Diego oferece o PS4 e Bruno solicita a bicicleta
+
+    (gen_random_uuid(), 'pendente', NOW(), 
+     (SELECT id FROM listings WHERE title = 'Notebook Dell'), 
+     (SELECT id FROM listings WHERE title = 'Sofá Retrátil'));  -- Alice oferece o notebook e Carla solicita o sofá
