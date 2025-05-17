@@ -1,28 +1,42 @@
-# Trueque API
+# Trueque -  API de Trocas
 
-**Trueque API** é uma aplicação backend desenvolvida em **Java 21** com **Spring Boot**, utilizando **JWT** para autenticação, persistência de dados com **PostgreSQL**, e conteinerização com **Docker** para facilitar o ambiente de desenvolvimento.
+### 🌱 Sobre a Trueque API
+
+**Trueque API** é uma plataforma de trocas de itens em que **não há envolvimento de dinheiro**. Seu objetivo é **promover a sustentabilidade**, a **reutilização consciente de bens** e estimular uma **economia colaborativa e ecológica**.
+
+A ideia central é **evitar o desperdício**, **prolongar a vida útil dos objetos** e **incentivar conexões sociais significativas** por meio da troca. Qualquer item — de livros e roupas a ferramentas ou eletrônicos — pode ser oferecido ou solicitado, valorizando o que já existe e reduzindo a necessidade de consumo excessivo.
+
+Essa abordagem contribui para:
+
+* 🌍 Redução do impacto ambiental
+* ♻️ Estímulo à economia circular
+* 👥 Fortalecimento de laços comunitários
+* 💡 Reaproveitamento criativo de recursos
 
 ---
 
 ## 📦 Tecnologias Utilizadas
 
-- Java 21
-- Spring Boot 3
-- Spring Security (JWT)
-- Spring Data JPA
-- PostgreSQL
-- Docker & Docker Compose
-- Maven
+* Java 21
+* Spring Boot 3.4.4
+* Spring Security (JWT)
+* Spring Data JPA
+* PostgreSQL
+* Springdoc OpenAPI (Swagger UI)
+* Docker & Docker Compose
+* Maven
 
 ---
 
 ## ⚙️ Funcionalidades
 
-- 🔐 Login com autenticação JWT
-- 👤 Gerenciamento de usuários (Cadastro, Login)
-- 🛡️ Segurança com Spring Security + BCrypt
-- 🐘 Integração com banco PostgreSQL
-- 📦 Build automatizado com Maven
+* 🔐 Login com autenticação JWT
+* 👤 Gerenciamento de usuários (Cadastro, Consulta, Atualização, Exclusão)
+* 🔁 Lógica de trocas entre usuários (em desenvolvimento)
+* 🛡️ Segurança com Spring Security + BCrypt
+* 🐘 Integração com banco PostgreSQL
+* 📄 Documentação automática via Swagger UI
+* 📦 Build automatizado com Maven
 
 ---
 
@@ -54,6 +68,7 @@ trueque-api/
 ## 🐳 Como Rodar com Docker
 
 ### 1. Crie um arquivo `.env` com as variáveis de ambiente:
+
 ```env
 DB_USER=postgres
 DB_PASSWORD=postgres
@@ -62,35 +77,57 @@ SEC_PASSWORD=admin
 ```
 
 ### 2. Suba a aplicação com Docker Compose:
+
 ```bash
 docker-compose up --build
 ```
 
 ### 3. Acesse a API
-A aplicação estará rodando em:  
+
+A aplicação estará disponível em:
 👉 `http://localhost:8080`
 
 ---
 
-## 🧪 Endpoints Úteis
+## 📄 Documentação da API
 
-| Método | Rota             | Descrição              |
-|--------|------------------|------------------------|
-| POST   | `/auth/login`    | Login do usuário       |
+A documentação interativa gerada automaticamente pelo Swagger está disponível em:
+
+👉 **[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)**
+ou
+👉 **[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)**
+
+Nela, você pode explorar os endpoints, schemas, parâmetros e exemplos de uso.
+
+---
+
+## 🥪 Endpoints Úteis
+
+| Método | Rota                  | Descrição                       |
+| ------ | --------------------- | ------------------------------- |
+| POST   | `/auth/login`         | Login do usuário                |
+| POST   | `/user/register`      | Cadastro de novo usuário        |
+| GET    | `/user/{id}`          | Consulta de dados do usuário    |
+| PUT    | `/user/{id}/data`     | Atualização de dados do usuário |
+| PUT    | `/user/{id}/password` | Atualização da senha do usuário |
+| DELETE | `/user/{id}`          | Exclusão do usuário             |
+
+> ⚠️ Os endpoints acima exigem autenticação via JWT, exceto o de login e cadastro.
 
 ---
 
 ## ✅ Requisitos
 
-- Java 21
-- Docker + Docker Compose
-- Maven
-
----
+* Java 21
+* Docker + Docker Compose
+* Maven
 
 ---
 
 ## 📌 Notas
 
-- As senhas são armazenadas de forma segura com **BCrypt**.
-- Os tokens JWT são gerados dinamicamente no login e devem ser usados para autenticação nas rotas protegidas.
+* As senhas são armazenadas de forma segura com **BCrypt**.
+* Os tokens JWT são gerados no login e devem ser incluídos no header `Authorization` como `Bearer <token>`.
+* A API está em constante evolução, com novos recursos sendo adicionados como sistema de trocas e avaliações.
+
+---
