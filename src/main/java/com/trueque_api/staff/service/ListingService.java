@@ -9,11 +9,16 @@ import com.trueque_api.staff.model.User;
 import com.trueque_api.staff.repository.ListingImageRepository;
 import com.trueque_api.staff.repository.ListingRepository;
 import com.trueque_api.staff.repository.UserRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class ListingService {
@@ -78,7 +83,20 @@ public class ListingService {
                 .stream()
                 .map(this::toResponseDTO)
                 .toList();
-    }    
+    }
+    
+    @Transactional
+    public void markAsExchanged(UUID listingId, String authenticatedEmail) {
+        Listing listing = listingRepository.findByIdAndUserEmail(listingId, authenticatedEmail)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Você não tem permissão para alterar este anúncio."));
+
+        if (!"negociando".equalsIgnoreCase(listing.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Anúncio só pode ser marcado como 'trocado' se estiver com status 'negociando'.");
+        }
+
+        listing.setStatus("trocado");
+        listingRepository.save(listing);
+    }
 
     private ListingResponseDTO toResponseDTO(Listing listing) {
         List<ListingImage> listingImages = listingImageRepository.findByListingId(listing.getId());
