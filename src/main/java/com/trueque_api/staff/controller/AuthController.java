@@ -3,6 +3,9 @@ package com.trueque_api.staff.controller;
 import com.trueque_api.staff.dto.LoginRequestDTO;
 import com.trueque_api.staff.dto.AuthResponseDTO;
 import com.trueque_api.staff.service.UserService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +20,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDTO> login(@RequestBody LoginRequestDTO loginRequest) {
-        AuthResponseDTO userDTO = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
-        return ResponseEntity.ok(userDTO);
+    public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
+        AuthResponseDTO authResponse = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
+        return ResponseEntity.ok(authResponse);
     }
 }
