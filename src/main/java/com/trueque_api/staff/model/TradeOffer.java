@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -31,11 +30,11 @@ public class TradeOffer {
     @Column(name = "rejected_at")
     private LocalDateTime rejectedAt;
 
-    @ManyToMany
-    @JoinTable(
-        name = "listing_trade_offer",
-        joinColumns = @JoinColumn(name = "trade_offer_id"),
-        inverseJoinColumns = @JoinColumn(name = "listing_id")
-    )
-    private List<Listing> listings;
+    @ManyToOne
+    @JoinColumn(name = "offered_listing_id", nullable = false)
+    private Listing offeredListing;
+
+    @ManyToOne
+    @JoinColumn(name = "requested_listing_id", nullable = false)
+    private Listing requestedListing;
 }
