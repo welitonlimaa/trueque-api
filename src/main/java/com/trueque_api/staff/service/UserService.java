@@ -3,6 +3,7 @@ package com.trueque_api.staff.service;
 import com.trueque_api.staff.dto.UserDataResponseDTO;
 import com.trueque_api.staff.dto.AuthResponseDTO;
 import com.trueque_api.staff.dto.PasswordUpdateDTO;
+import com.trueque_api.staff.dto.UserDataRequestDTO;
 import com.trueque_api.staff.exception.BadRequestException;
 import com.trueque_api.staff.exception.EmailAlreadyExistsException;
 import com.trueque_api.staff.exception.InvalidCredentialsException;
@@ -47,25 +48,29 @@ public class UserService {
                 .build();
     }
 
-    public AuthResponseDTO register(User user) {
-        if (userRepository.findByEmail(user.getEmail().toLowerCase()).isPresent()) {
+    public AuthResponseDTO register(UserDataRequestDTO userDataDTO) {
+        String emailLower = userDataDTO.getEmail().toLowerCase();
+    
+        if (userRepository.findByEmail(emailLower).isPresent()) {
             throw new EmailAlreadyExistsException("Este email já está registrado.");
         }
-
-        user.setName(user.getName());
-        user.setPhone(user.getPhone());
-        user.setEmail(user.getEmail().toLowerCase());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+    
+        User user = new User();
+        user.setName(userDataDTO.getName());
+        user.setPhone(userDataDTO.getPhone());
+        user.setEmail(emailLower);
+        user.setPassword(passwordEncoder.encode(userDataDTO.getPassword()));
+    
         User savedUser = userRepository.save(user);
-
+    
         String token = jwtUtil.generateToken(savedUser.getEmail());
-
+    
         return AuthResponseDTO.builder()
             .email(savedUser.getEmail())
             .name(savedUser.getName())
             .token(token)
             .build();
-    }
+    }    
 
     public UserDataResponseDTO getById(UUID id, String authenticatedEmail) {
         User user = userRepository.findById(id)
