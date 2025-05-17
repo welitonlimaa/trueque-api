@@ -3,6 +3,9 @@ package com.trueque_api.staff.controller;
 import com.trueque_api.staff.dto.ListingRequestDTO;
 import com.trueque_api.staff.dto.ListingResponseDTO;
 import com.trueque_api.staff.service.ListingService;
+
+import jakarta.validation.Valid;
+
 import com.trueque_api.staff.security.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,8 +25,8 @@ public class ListingController {
         this.jwtUtil = jwtUtil;
     }
 
-    @PostMapping
-    public ResponseEntity<ListingResponseDTO> create(@RequestBody ListingRequestDTO listingRequestDTO,
+    @PostMapping("/createlisting")
+    public ResponseEntity<ListingResponseDTO> create(@Valid @RequestBody ListingRequestDTO listingRequestDTO,
                                                      @RequestHeader("Authorization") String token) {
         String authenticatedEmail = jwtUtil.extractEmail(token.replace("Bearer ", ""));
         ListingResponseDTO createdListing = listingService.createListing(listingRequestDTO, authenticatedEmail);
@@ -47,5 +50,13 @@ public class ListingController {
         String authenticatedEmail = jwtUtil.extractEmail(token.replace("Bearer ", ""));
         List<ListingResponseDTO> listings = listingService.listUserListings(authenticatedEmail);
         return ResponseEntity.ok(listings);
+    }
+
+    @PatchMapping("/{id}/mark-as-exchanged")
+    public ResponseEntity<Void> markAsExchanged(@PathVariable UUID id,
+                                                @RequestHeader("Authorization") String token) {
+        String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+        listingService.markAsExchanged(id, email);
+        return ResponseEntity.noContent().build();
     }
 }
