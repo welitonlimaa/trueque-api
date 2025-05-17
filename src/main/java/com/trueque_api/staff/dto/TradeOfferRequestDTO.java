@@ -1,13 +1,13 @@
 package com.trueque_api.staff.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
-@Getter
-@Setter
-public class TradeOfferRequestDTO {
-    private UUID offeredItemId;
-    private UUID requestedItemId;
-}
+public record TradeOfferRequestDTO(
+    @NotNull(message = "ID do anúncio oferecido é obrigatório")
+    UUID offeredListingId,
+
+    @NotNull(message = "ID do anúncio desejado é obrigatório")
+    UUID requestedListingId
+) {}
