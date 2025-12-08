@@ -1,6 +1,20 @@
 version: '3.8'
 
 services:
+  app:
+    build: .
+    container_name: trueque-api
+    ports:
+      - "8080:8080"
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SEC_USER: ${SEC_USER}
+      SEC_PASSWORD: ${SEC_PASSWORD}
+    depends_on:
+      - db
+    networks:
+      - trueque-network
   db:
     build:
       context: ./db
