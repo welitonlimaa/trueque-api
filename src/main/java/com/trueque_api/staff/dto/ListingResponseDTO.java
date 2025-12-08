@@ -19,4 +19,5 @@ public class ListingResponseDTO {
     private String state;
     private String status;
     private LocalDateTime createdAt;
+    private UserSummaryDTO user;
 }

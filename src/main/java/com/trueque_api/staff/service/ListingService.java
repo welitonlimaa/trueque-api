@@ -2,6 +2,7 @@ package com.trueque_api.staff.service;
 
 import com.trueque_api.staff.dto.ListingRequestDTO;
 import com.trueque_api.staff.dto.ListingResponseDTO;
+import com.trueque_api.staff.dto.UserSummaryDTO;
 import com.trueque_api.staff.exception.NotFoundException;
 import com.trueque_api.staff.model.Listing;
 import com.trueque_api.staff.model.ListingImage;
@@ -10,7 +11,6 @@ import com.trueque_api.staff.repository.ListingImageRepository;
 import com.trueque_api.staff.repository.ListingRepository;
 import com.trueque_api.staff.repository.UserRepository;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 import org.springframework.http.HttpStatus;
@@ -27,7 +27,11 @@ public class ListingService {
     private final UserRepository userRepository;
     private final ListingImageRepository listingImageRepository;
 
-    public ListingService(ListingRepository listingRepository, UserRepository userRepository, ListingImageRepository listingImageRepository) {
+    public ListingService(
+        ListingRepository listingRepository, 
+        UserRepository userRepository, 
+        ListingImageRepository listingImageRepository) 
+    {
         this.listingRepository = listingRepository;
         this.userRepository = userRepository;
         this.listingImageRepository = listingImageRepository;
@@ -99,6 +103,14 @@ public class ListingService {
     }
 
     private ListingResponseDTO toResponseDTO(Listing listing) {
+        User user = listing.getUser();
+
+        UserSummaryDTO userSummary = UserSummaryDTO.builder()
+            .id(user.getId())
+            .name(user.getName())
+            .profilePicture(user.getProfilePicture())
+            .build();
+
         List<ListingImage> listingImages = listingImageRepository.findByListingId(listing.getId());
     
         List<String> imageUrls = listingImages.stream()
@@ -116,6 +128,7 @@ public class ListingService {
                 .state(listing.getState())
                 .status(listing.getStatus())
                 .createdAt(listing.getCreatedAt())
+                .user(userSummary)
                 .build();
     }
     
