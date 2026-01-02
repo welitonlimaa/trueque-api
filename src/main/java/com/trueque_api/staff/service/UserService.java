@@ -39,7 +39,7 @@ public class UserService {
             throw new InvalidCredentialsException("Senha incorreta.");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(user);
 
         return AuthResponseDTO.builder()
                 .name(user.getName())
@@ -63,7 +63,7 @@ public class UserService {
     
         User savedUser = userRepository.save(user);
     
-        String token = jwtUtil.generateToken(savedUser.getEmail());
+        String token = jwtUtil.generateToken(savedUser);
     
         return AuthResponseDTO.builder()
             .email(savedUser.getEmail())
