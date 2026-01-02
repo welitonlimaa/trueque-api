@@ -127,4 +127,8 @@ VALUES
 
     (gen_random_uuid(), 'pendente', NOW(), 
      (SELECT id FROM listings WHERE title = 'Notebook Dell'), 
-     (SELECT id FROM listings WHERE title = 'Sofá Retrátil'));  -- Alice oferece o notebook e Carla solicita o sofá
+     (SELECT id FROM listings WHERE title = 'Sofá Retrátil')), -- Alice oferece o notebook e Carla solicita o sofá
+
+    (gen_random_uuid(), 'pendente', NOW(), 
+     (SELECT id FROM listings WHERE title = 'Videogame PS4'),
+     (SELECT id FROM listings WHERE title = 'Notebook Dell'));
