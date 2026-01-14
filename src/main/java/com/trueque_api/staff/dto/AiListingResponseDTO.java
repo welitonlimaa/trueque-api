@@ -1,10 +1,12 @@
 package com.trueque_api.staff.dto;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
-@Builder
-@Getter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class AiListingResponseDTO {
     private String title;
     private String description;

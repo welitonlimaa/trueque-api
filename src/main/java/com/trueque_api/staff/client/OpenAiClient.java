@@ -1,6 +1,7 @@
 package com.trueque_api.staff.client;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trueque_api.staff.dto.AiListingResponseDTO;
 import okhttp3.OkHttpClient;
@@ -69,12 +70,18 @@ public class OpenAiClient {
         try (Response response = client.newCall(request).execute()) {
             String body = response.body().string();
 
-            String json = mapper
+            String content = mapper
                 .readTree(body)
                 .at("/choices/0/message/content")
                 .asText();
 
-            return mapper.readValue(json, AiListingResponseDTO.class);
+            if (content == null || content.isBlank()) {
+                throw new RuntimeException("OpenAI retornou content vazio");
+            }
+
+            JsonNode node = mapper.readTree(content);
+
+            return mapper.treeToValue(node, AiListingResponseDTO.class);
         }
     }
 }
