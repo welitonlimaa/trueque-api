@@ -29,18 +29,21 @@ public class OpenAiClient {
     public AiListingResponseDTO analyzeImage(String base64Image) throws IOException {
 
         String prompt = """
-        Você está ajudando a preencher um anúncio de marketplace com base na imagem fornecida.
+            Você está ajudando a preencher um anúncio de marketplace com base na imagem fornecida.
 
-        Analise cuidadosamente o item exibido e retorne APENAS um JSON válido, sem explicações, sem markdown, sem texto adicional.
+            Analise cuidadosamente o item exibido e retorne APENAS um JSON válido, sem explicações, sem markdown, sem texto adicional.
 
-        O JSON deve conter exatamente os seguintes campos, todos em português:
+            O JSON deve conter exatamente os seguintes campos, todos em português:
+            - title: título curto e objetivo do produto
+            - description: descrição clara, comercial e fiel ao estado do item
+            - category: categoria do produto (use APENAS uma das opções abaixo)
 
-        - title: título curto e objetivo do produto
-        - description: descrição clara, comercial e fiel ao estado do item
-        - category: categoria do produto (apenas uma palavra)
-        - condition: "Novo" ou "Usado"
+            Categorias permitidas:
+            vestuario, eletronicos, moveis, eletrodomesticos, calcados, acessorios, livros, esporte_lazer, beleza_cuidados, automotivo, infantil, casa_decoracao, ferramentas, pet, outros
 
-        Seja preciso, objetivo e evite suposições não visíveis na imagem.
+            Regras:
+            - category deve ser exatamente um dos códigos acima
+            - seja preciso, objetivo e evite suposições não visíveis na imagem
         """;
 
         Map<String, Object> payload = Map.of(
