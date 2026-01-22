@@ -8,7 +8,6 @@ import com.trueque_api.staff.client.OpenAiClient;
 import com.trueque_api.staff.dto.AiListingRequestDTO;
 import com.trueque_api.staff.dto.AiListingResponseDTO;
 import com.trueque_api.staff.exception.NotFoundException;
-import com.trueque_api.staff.model.User;
 import com.trueque_api.staff.repository.UserRepository;
 
 @Service
