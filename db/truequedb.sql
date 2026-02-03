@@ -47,48 +47,6 @@ CREATE TABLE trade_offers (
     requested_listing_id UUID REFERENCES listings(id) ON DELETE CASCADE
 );
 
--- Criar função para finalizar os anúncios e recusar outras ofertas ao aceitar uma proposta
--- CREATE OR REPLACE FUNCTION finalize_listings()
--- RETURNS TRIGGER AS $$
--- DECLARE
---     affected_listing UUID;
--- BEGIN
---     -- Marcar todos os anúncios dessa oferta como 'trocado'
---     UPDATE listings
---     SET status = 'trocado'
---     WHERE id IN (
---         SELECT listing_id
---         FROM listing_trade_offer
---         WHERE trade_offer_id = NEW.id
---     );
-
-    -- Recusar outras ofertas pendentes que envolvam os mesmos anúncios
---     UPDATE trade_offers
---     SET status = 'recusada',
---         rejected_at = NOW()
---     WHERE id <> NEW.id
---       AND status = 'pendente'
---       AND id IN (
---           SELECT trade_offer_id
---           FROM listing_trade_offer
---           WHERE listing_id IN (
---               SELECT listing_id
---               FROM listing_trade_offer
---               WHERE trade_offer_id = NEW.id
---           )
---       );
-
---     RETURN NEW;
--- END;
--- $$ LANGUAGE plpgsql;
-
--- -- Criar trigger para acionar a função após aceitação da proposta
--- CREATE TRIGGER trigger_finalize_trade
--- AFTER UPDATE ON trade_offers
--- FOR EACH ROW
--- WHEN (NEW.status = 'aceita' AND OLD.status IS DISTINCT FROM 'aceita')
--- EXECUTE FUNCTION finalize_listings();
-
 -- Inserir dados na tabela users
 INSERT INTO users (id, name, email, phone, password, google_id, profile_picture, city, state) VALUES
     (gen_random_uuid(), 'Alice Silva', 'alice@example.com', '63990637299', '$2a$10$bbB/dah1pHheRah2XMjKXOWCqS24laiCaAJ7x0uRfDvmRJ8SvL6Jy', NULL, NULL, 'São Paulo', 'SP'), -- senha 123456
@@ -105,10 +63,10 @@ INSERT INTO listings (id, user_id, title, description, category, condition, city
 
 -- Inserir dados na tabela listing_images
 INSERT INTO listing_images (id, listing_id, image_url) VALUES
-    (gen_random_uuid(), (SELECT id FROM listings WHERE title = 'Notebook Dell'), 'https://example.com/notebook1.jpg'),
-    (gen_random_uuid(), (SELECT id FROM listings WHERE title = 'Bicicleta Caloi'), 'https://example.com/bike.jpg'),
-    (gen_random_uuid(), (SELECT id FROM listings WHERE title = 'Sofá Retrátil'), 'https://example.com/sofa.jpg'),
-    (gen_random_uuid(), (SELECT id FROM listings WHERE title = 'Videogame PS4'), 'https://example.com/ps4.jpg');
+    (gen_random_uuid(), (SELECT id FROM listings WHERE title = 'Notebook Dell'), 'https://photos.enjoei.com.br/public/1200x1200/czM6Ly9waG90b3MuZW5qb2VpLmNvbS5ici9wcm9kdWN0cy8zMjg4OTAzMS8wNzc3NzI0MTNhZjdlYjk4NmE3MTA4MWNhNDFiNjdkOS5qcGc'),
+    (gen_random_uuid(), (SELECT id FROM listings WHERE title = 'Bicicleta Caloi'), 'https://darien.cdn.magazord.com.br/img/2023/01/produto/10941/119812-1-bicicleta-usada-aro-26-caloi-trs-18v-preto-vermelho-cli-10197.jpg'),
+    (gen_random_uuid(), (SELECT id FROM listings WHERE title = 'Sofá Retrátil'), 'https://img.olx.com.br/images/75/758657248690056.jpg'),
+    (gen_random_uuid(), (SELECT id FROM listings WHERE title = 'Videogame PS4'), 'https://photos.enjoei.com.br/ps4-controle-e-jogos/1200xN/czM6Ly9waG90b3MuZW5qb2VpLmNvbS5ici9wcm9kdWN0cy8yODAxMjY2NS9kOTBhZWI5NWQxODExNmZlMDhhNDcyNDQxZTc0OWQ1Zi5qcGc');
 
 -- Inserir ofertas de troca na tabela trade_offers
 INSERT INTO trade_offers (id, status, created_at, offered_listing_id, requested_listing_id)
