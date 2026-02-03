@@ -2,6 +2,8 @@ package com.trueque_api.staff.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.trueque_api.staff.model.User;
@@ -12,11 +14,14 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private static final String SECRET_KEY = "superSecretKeyForJwtThatShouldBeLongEnough";
-    private static final long EXPIRATION_TIME = 86400000; // 1 dia
+    @Value("${jwt.secret-key}")
+    private String secretKey;
+
+    @Value("${jwt.expiration-time}")
+    private long expirationTime;
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+        return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
     public String generateToken(User user) {
@@ -25,7 +30,7 @@ public class JwtUtil {
                 .claim("userId", user.getId().toString())
                 .setIssuedAt(new Date())
                 .setExpiration(
-                    new Date(System.currentTimeMillis() + EXPIRATION_TIME)
+                    new Date(System.currentTimeMillis() + expirationTime)
                 )
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
