@@ -4,18 +4,18 @@
 
 **Trueque API** é uma plataforma de trocas de itens em que **não há envolvimento de dinheiro**. Seu objetivo é **promover a sustentabilidade**, a **reutilização consciente de bens** e estimular uma **economia colaborativa e ecológica**.
 
-A ideia central é **evitar o desperdício**, **prolongar a vida útil dos objetos** e **incentivar conexões sociais significativas** por meio da troca. Qualquer item — de livros e roupas a ferramentas ou eletrônicos — pode ser oferecido ou solicitado, valorizando o que já existe e reduzindo a necessidade de consumo excessivo.
+A ideia central é **evitar o desperdício**, **prolongar a vida útil dos objetos** e **incentivar conexões sociais significativas** por meio da troca. Qualquer item pode ser oferecido ou solicitado, valorizando o que já existe e reduzindo a necessidade de consumo excessivo.
 
 Essa abordagem contribui para:
 
-* 🌍 Redução do impacto ambiental
-* ♻️ Estímulo à economia circular
-* 👥 Fortalecimento de laços comunitários
-* 💡 Reaproveitamento criativo de recursos
+* Redução do impacto ambiental
+* Estímulo à economia circular
+* Fortalecimento de laços comunitários
+* Reaproveitamento criativo de recursos
 
 ---
 
-## 📦 Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 * Java 21
 * Spring Boot 3.4.4
@@ -28,19 +28,19 @@ Essa abordagem contribui para:
 
 ---
 
-## ⚙️ Funcionalidades
+## Funcionalidades
 
-* 🔐 Login com autenticação JWT
-* 👤 Gerenciamento de usuários (Cadastro, Consulta, Atualização, Exclusão)
-* 🔁 Lógica de trocas entre usuários (em desenvolvimento)
-* 🛡️ Segurança com Spring Security + BCrypt
-* 🐘 Integração com banco PostgreSQL
-* 📄 Documentação automática via Swagger UI
-* 📦 Build automatizado com Maven
+* Login com autenticação JWT
+* Gerenciamento de usuários (Cadastro, Consulta, Atualização, Exclusão)
+* Lógica de trocas entre usuários (em desenvolvimento)
+* Segurança com Spring Security + BCrypt
+* Integração com banco PostgreSQL
+* Documentação automática via Swagger UI
+* Build automatizado com Maven
 
 ---
 
-## 📁 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 trueque-api/
@@ -65,7 +65,7 @@ trueque-api/
 
 ---
 
-## 🐳 Como Rodar com Docker
+## Como Rodar com Docker
 
 ### 1. Crie um arquivo `.env` com as variáveis de ambiente:
 
@@ -85,7 +85,7 @@ docker-compose up --build
 ### 3. Acesse a API
 
 A aplicação estará disponível em:
-👉 `http://localhost:8080`
+`http://localhost:8080`
 
 ---
 
@@ -93,15 +93,15 @@ A aplicação estará disponível em:
 
 A documentação interativa gerada automaticamente pelo Swagger está disponível em:
 
-👉 **[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)**
+ **[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)**
 ou
-👉 **[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)**
+ **[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)**
 
 Nela, você pode explorar os endpoints, schemas, parâmetros e exemplos de uso.
 
 ---
 
-## 🥪 Endpoints Úteis
+## Endpoints Úteis
 
 | Método | Rota                  | Descrição                       |
 | ------ | --------------------- | ------------------------------- |
@@ -112,11 +112,11 @@ Nela, você pode explorar os endpoints, schemas, parâmetros e exemplos de uso.
 | PUT    | `/user/{id}/password` | Atualização da senha do usuário |
 | DELETE | `/user/{id}`          | Exclusão do usuário             |
 
-> ⚠️ Os endpoints acima exigem autenticação via JWT, exceto o de login e cadastro.
+> Os endpoints acima exigem autenticação via JWT, exceto o de login e cadastro.
 
 ---
 
-## ✅ Requisitos
+## Requisitos
 
 * Java 21
 * Docker + Docker Compose
