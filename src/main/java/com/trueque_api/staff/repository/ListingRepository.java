@@ -22,4 +22,6 @@ public interface ListingRepository extends JpaRepository<Listing, UUID> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT l FROM Listing l WHERE l.id = :id")
     Optional<Listing> findByIdForUpdate(@Param("id") UUID id);
+
+    List<Listing> findAllByStatus(String status);
 }

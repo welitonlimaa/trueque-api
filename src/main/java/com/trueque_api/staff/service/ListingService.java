@@ -72,6 +72,12 @@ public class ListingService {
                    .toList();
     }
 
+    public List<ListingResponseDTO> getPendingListings() {
+        return listingRepository.findAllByStatus("pendente")
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
+    }
 
     public ListingResponseDTO getListingById(UUID id) {
         Listing listing = listingRepository.findById(id)
@@ -100,6 +106,17 @@ public class ListingService {
 
         listing.setStatus("trocado");
         listingRepository.save(listing);
+    }
+
+    @Transactional
+    public ListingResponseDTO updateListingStatus(UUID listingId, String newStatus) {
+
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new NotFoundException("Anúncio não encontrado."));
+
+        listing.setStatus(newStatus);
+
+        return toResponseDTO(listing);
     }
 
     private ListingResponseDTO toResponseDTO(Listing listing) {

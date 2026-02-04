@@ -2,6 +2,7 @@ package com.trueque_api.staff.controller;
 
 import com.trueque_api.staff.dto.ListingRequestDTO;
 import com.trueque_api.staff.dto.ListingResponseDTO;
+import com.trueque_api.staff.dto.StatusUpdateRequest;
 import com.trueque_api.staff.service.ListingService;
 
 import jakarta.validation.Valid;
@@ -39,6 +40,12 @@ public class ListingController {
         return ResponseEntity.ok(listings);
     }    
 
+    @GetMapping("/pending")
+    public ResponseEntity<List<ListingResponseDTO>> getPendingListings() {
+        List<ListingResponseDTO> listings = listingService.getPendingListings();
+        return ResponseEntity.ok(listings);
+    }   
+
     @GetMapping("/{id}")
     public ResponseEntity<ListingResponseDTO> getById(@PathVariable UUID id) {
         ListingResponseDTO listing = listingService.getListingById(id);
@@ -58,5 +65,16 @@ public class ListingController {
         String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
         listingService.markAsExchanged(id, email);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ListingResponseDTO> updateStatus(
+            @PathVariable UUID id,
+            @Valid @RequestBody StatusUpdateRequest request
+    ) {
+        ListingResponseDTO listing =
+            listingService.updateListingStatus(id, request.getStatus());
+
+        return ResponseEntity.ok(listing);
     }
 }
