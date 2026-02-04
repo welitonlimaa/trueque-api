@@ -25,7 +25,7 @@ CREATE TABLE listings (
     condition VARCHAR(50),
     city VARCHAR(100),
     state VARCHAR(100),
-    status VARCHAR(20) DEFAULT 'ativo' CHECK (status IN ('ativo', 'negociando', 'trocado')),
+    status VARCHAR(20) DEFAULT 'pendente' CHECK (status IN ('ativo', 'inativo', 'negociando', 'pendente', 'trocado')),
     created_at TIMESTAMP DEFAULT NOW()
 );
 
