@@ -3,7 +3,7 @@ name: Marketplace Moderation
 on:
   workflow_dispatch:
   schedule:
-    - cron: "* * * * *"
+    - cron: "0 12 * * *"
 
 jobs:
   moderate:
