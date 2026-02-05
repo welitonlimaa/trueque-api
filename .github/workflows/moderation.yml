@@ -2,7 +2,7 @@ name: Marketplace Moderation
 
 on:
   schedule:
-    - cron: "*/30 * * * *" # a cada 30 minutos
+    - cron: "* * * * *" # a cada 30 minutos
   workflow_dispatch:
 
 jobs:
