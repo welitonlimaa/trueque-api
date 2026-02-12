@@ -15,6 +15,17 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE user_roles (
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    role_id INT REFERENCES roles(id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, role_id)
+);
+
 -- Criar tabela de anúncios
 CREATE TABLE listings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -52,7 +63,40 @@ INSERT INTO users (id, name, email, phone, password, google_id, profile_picture,
     (gen_random_uuid(), 'Alice Silva', 'alice@example.com', '63990637299', '$2a$10$bbB/dah1pHheRah2XMjKXOWCqS24laiCaAJ7x0uRfDvmRJ8SvL6Jy', NULL, NULL, 'São Paulo', 'SP'), -- senha 123456
     (gen_random_uuid(), 'Bruno Souza', 'bruno@example.com', '21987654321', NULL, 'google456', 'https://example.com/bruno.jpg', 'Rio de Janeiro', 'RJ'),
     (gen_random_uuid(), 'Carla Mendes', 'carla@example.com', '31987654321', NULL, 'google789', 'https://example.com/carla.jpg', 'Belo Horizonte', 'MG'),
-    (gen_random_uuid(), 'Diego Rocha', 'diego@example.com', '41987654321', NULL, 'google101', 'https://example.com/diego.jpg', 'Curitiba', 'PR');
+    (gen_random_uuid(), 'Diego Rocha', 'diego@example.com', '41987654321', NULL, 'google101', 'https://example.com/diego.jpg', 'Curitiba', 'PR'),
+    (
+        gen_random_uuid(),
+        'Admin Master',
+        'admin@example.com',
+        '11999999999',
+        '$2a$10$bbB/dah1pHheRah2XMjKXOWCqS24laiCaAJ7x0uRfDvmRJ8SvL6Jy',
+        NULL,
+        NULL,
+        'São Paulo',
+        'SP'
+    ),
+    (
+        gen_random_uuid(),
+        'Usuario Teste',
+        'user@example.com',
+        '11888888888',
+        '$2a$10$bbB/dah1pHheRah2XMjKXOWCqS24laiCaAJ7x0uRfDvmRJ8SvL6Jy',
+        NULL,
+        NULL,
+        'Rio de Janeiro',
+        'RJ'
+    );
+
+INSERT INTO roles (name) VALUES
+    ('ROLE_ADMIN'),
+    ('ROLE_MODERATOR'),
+    ('ROLE_USER');
+
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM users u, roles r
+WHERE u.email = 'admin@example.com'
+AND r.name = 'ROLE_ADMIN';
 
 -- Inserir dados na tabela listings
 INSERT INTO listings (id, user_id, title, description, category, condition, city, state) VALUES
