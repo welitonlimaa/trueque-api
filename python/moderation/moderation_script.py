@@ -8,6 +8,7 @@ from openai import OpenAI
 # ==========================
 
 API_BASE = os.getenv("API_BASE_URL")
+API_TOKEN = os.getenv("API_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.7"))
 
@@ -16,11 +17,14 @@ if not OPENAI_API_KEY:
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-HEADERS = {"Content-Type": "application/json"}
+HEADERS = {"Authorization": f"Bearer {API_TOKEN}", "Content-Type": "application/json"}
+
 
 # ==========================
 # API BACKEND
 # ==========================
+class ModerationError(Exception):
+    pass
 
 
 def get_pending_listings():
@@ -54,13 +58,17 @@ def update_status(listing_id, status):
 
 def moderate_text(text):
 
-    response = client.moderations.create(model="omni-moderation-latest", input=text)
+    try:
+        response = client.moderations.create(model="omni-moderation-latest", input=text)
 
-    flagged = response.results[0].flagged
-    score = 1.0 if not flagged else 0.0
+        flagged = response.results[0].flagged
+        score = 1.0 if not flagged else 0.0
 
-    print(f"Texto score: {score}")
-    return score
+        print(f"Texto score: {score}")
+        return score
+
+    except Exception as e:
+        raise ModerationError(f"Erro na moderação de texto: {e}")
 
 
 # ==========================
@@ -80,29 +88,28 @@ def moderate_image(image_url):
     }
     """
 
-    response = client.responses.create(
-        model="gpt-4.1-mini",
-        input=[
-            {
-                "role": "user",
-                "content": [
-                    {"type": "input_text", "text": prompt},
-                    {"type": "input_image", "image_url": image_url},
-                ],
-            }
-        ],
-    )
-
     try:
+        response = client.responses.create(
+            model="gpt-4.1-mini",
+            input=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "input_text", "text": prompt},
+                        {"type": "input_image", "image_url": image_url},
+                    ],
+                }
+            ],
+        )
+
         result = json.loads(response.output_text)
         confidence = result["confidence"] if result["safe"] else 0.0
 
         print(f"Imagem score: {confidence}")
         return confidence
 
-    except Exception:
-        print("Erro interpretando resposta da IA")
-        return 0.0
+    except Exception as e:
+        raise ModerationError(f"Erro na moderação de imagem: {e}")
 
 
 # ==========================
@@ -147,8 +154,11 @@ def run():
             else:
                 update_status(listing["id"], "inativo")
 
+        except ModerationError as e:
+            print(f"[MODERATION ERROR] Listing {listing['id']}: {e}")
+
         except Exception as e:
-            print(f"Erro no listing {listing['id']}: {e}")
+            print(f"[UNEXPECTED ERROR] {listing['id']}: {e}")
 
 
 if __name__ == "__main__":

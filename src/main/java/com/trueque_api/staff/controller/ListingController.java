@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 
 import com.trueque_api.staff.security.JwtUtil;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public class ListingController {
     }    
 
     @GetMapping("/pending")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public ResponseEntity<List<ListingResponseDTO>> getPendingListings() {
         List<ListingResponseDTO> listings = listingService.getPendingListings();
         return ResponseEntity.ok(listings);
@@ -68,6 +70,7 @@ public class ListingController {
     }
 
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public ResponseEntity<ListingResponseDTO> updateStatus(
             @PathVariable UUID id,
             @Valid @RequestBody StatusUpdateRequest request
