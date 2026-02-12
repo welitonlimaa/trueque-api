@@ -50,12 +50,14 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/auth/login", 
                     "/user/register",
-                    "/listings/**",
+                    "/listings/",
                     "/swagger-ui.html",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/v3/api-docs.yaml"
                 ).permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/moderation/**").hasAnyRole("ADMIN", "MODERATOR")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

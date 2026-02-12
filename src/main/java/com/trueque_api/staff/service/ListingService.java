@@ -14,6 +14,7 @@ import com.trueque_api.staff.repository.UserRepository;
 import jakarta.transaction.Transactional;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -71,7 +72,7 @@ public class ListingService {
                    .map(this::toResponseDTO)
                    .toList();
     }
-
+    
     public List<ListingResponseDTO> getPendingListings() {
         return listingRepository.findAllByStatus("pendente")
                 .stream()

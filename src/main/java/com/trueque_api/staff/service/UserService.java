@@ -10,9 +10,12 @@ import com.trueque_api.staff.exception.InvalidCredentialsException;
 import com.trueque_api.staff.exception.NotFoundException;
 import com.trueque_api.staff.exception.UnauthorizedAccessException;
 import com.trueque_api.staff.model.User;
+import com.trueque_api.staff.model.Role;
+import com.trueque_api.staff.repository.RoleRepository;
 import com.trueque_api.staff.repository.UserRepository;
 import com.trueque_api.staff.security.JwtUtil;
-
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.UUID;
@@ -22,11 +25,18 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public UserService(
+        UserRepository userRepository,
+        RoleRepository roleRepository,
+        PasswordEncoder passwordEncoder,
+        JwtUtil jwtUtil
+    ) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
     }
@@ -49,28 +59,34 @@ public class UserService {
     }
 
     public AuthResponseDTO register(UserDataRequestDTO userDataDTO) {
+
         String emailLower = userDataDTO.getEmail().toLowerCase();
-    
+
         if (userRepository.findByEmail(emailLower).isPresent()) {
             throw new EmailAlreadyExistsException("Este email já está registrado.");
         }
-    
+
+        Role userRole = roleRepository.findByName("USER")
+                .orElseThrow(() -> new RuntimeException("Role padrão não encontrada."));
+
         User user = new User();
         user.setName(userDataDTO.getName());
         user.setPhone(userDataDTO.getPhone());
         user.setEmail(emailLower);
         user.setPassword(passwordEncoder.encode(userDataDTO.getPassword()));
-    
+        user.getRoles().add(userRole);
+
         User savedUser = userRepository.save(user);
-    
+
         String token = jwtUtil.generateToken(savedUser);
-    
+
         return AuthResponseDTO.builder()
-            .email(savedUser.getEmail())
-            .name(savedUser.getName())
-            .token(token)
-            .build();
-    }    
+                .email(savedUser.getEmail())
+                .name(savedUser.getName())
+                .token(token)
+                .build();
+    }
+    
 
     public UserDataResponseDTO getById(UUID id, String authenticatedEmail) {
         User user = userRepository.findById(id)
@@ -150,5 +166,20 @@ public class UserService {
         }
     
         userRepository.delete(user);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public void addRoleToUser(UUID userId, String roleName, String authenticatedEmail) {
+        userRepository.findByEmail(authenticatedEmail)
+                .orElseThrow(() -> new NotFoundException("Usuário autenticado não encontrado."));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
+
+        Role role = roleRepository.findByName(roleName)
+                .orElseThrow(() -> new NotFoundException("Role não encontrada."));
+
+        user.getRoles().add(role);
     }
 }

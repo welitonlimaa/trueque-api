@@ -10,6 +10,7 @@ import com.trueque_api.staff.model.User;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtUtil {
@@ -25,35 +26,54 @@ public class JwtUtil {
     }
 
     public String generateToken(User user) {
+
+        List<String> roles = user.getRoles()
+                .stream()
+                .map(role -> role.getName())
+                .toList();
+
         return Jwts.builder()
                 .setSubject(user.getEmail())
                 .claim("userId", user.getId().toString())
+                .claim("roles", roles)
                 .setIssuedAt(new Date())
-                .setExpiration(
-                    new Date(System.currentTimeMillis() + expirationTime)
-                )
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String extractEmail(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+            return extractAllClaims(token).getSubject();
+        }
+
+        public List<String> extractRoles(String token) {
+        Claims claims = extractAllClaims(token);
+        Object roles = claims.get("roles");
+
+        if (roles instanceof List<?>) {
+            return ((List<?>) roles)
+                    .stream()
+                    .map(Object::toString)
+                    .toList();
+        }
+
+        return List.of();
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token);
+            extractAllClaims(token);
             return true;
-        } catch (JwtException e) {
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
