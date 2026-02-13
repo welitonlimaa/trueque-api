@@ -3,7 +3,10 @@ package com.trueque_api.staff.service;
 import com.trueque_api.staff.dto.ListingRequestDTO;
 import com.trueque_api.staff.dto.ListingResponseDTO;
 import com.trueque_api.staff.dto.UserSummaryDTO;
+import com.trueque_api.staff.exception.BadRequestException;
+import com.trueque_api.staff.exception.InvalidCredentialsException;
 import com.trueque_api.staff.exception.NotFoundException;
+import com.trueque_api.staff.exception.UnauthorizedAccessException;
 import com.trueque_api.staff.model.Listing;
 import com.trueque_api.staff.model.ListingImage;
 import com.trueque_api.staff.model.User;
@@ -13,10 +16,7 @@ import com.trueque_api.staff.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -67,7 +67,7 @@ public class ListingService {
 
 
     public List<ListingResponseDTO> getAllListings() {
-    List<Listing> listings = listingRepository.findAll();
+    List<Listing> listings = listingRepository.findAllByStatus("ativo");
     return listings.stream()
                    .map(this::toResponseDTO)
                    .toList();
@@ -80,9 +80,30 @@ public class ListingService {
                 .toList();
     }
 
-    public ListingResponseDTO getListingById(UUID id) {
+    public ListingResponseDTO getListingById(UUID id, String authenticatedEmail) {
+
         Listing listing = listingRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Anúncio não encontrado."));
+
+        if (listing.getStatus().equals("ativo")) {
+            return toResponseDTO(listing);
+        }
+
+        if (authenticatedEmail == null) {
+            throw new InvalidCredentialsException(
+                    "Você precisa estar autenticado para visualizar este anúncio.");
+        }
+
+        User user = userRepository.findByEmail(authenticatedEmail)
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
+
+        boolean isOwner = listing.getUser().equals(user);
+
+        if (!isOwner && !user.isAdminOrModerator()) {
+            throw new UnauthorizedAccessException(
+                    "Você não tem permissão para visualizar este anúncio.");
+        }
+
         return toResponseDTO(listing);
     }
 
@@ -99,10 +120,10 @@ public class ListingService {
     @Transactional
     public void markAsExchanged(UUID listingId, String authenticatedEmail) {
         Listing listing = listingRepository.findByIdAndUserEmail(listingId, authenticatedEmail)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Você não tem permissão para alterar este anúncio."));
+            .orElseThrow(() -> new UnauthorizedAccessException("Você não tem permissão para alterar este anúncio."));
 
         if (!"negociando".equalsIgnoreCase(listing.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Anúncio só pode ser marcado como 'trocado' se estiver com status 'negociando'.");
+            throw new BadRequestException("Anúncio só pode ser marcado como 'trocado' se estiver com status 'negociando'.");
         }
 
         listing.setStatus("trocado");

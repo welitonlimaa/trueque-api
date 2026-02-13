@@ -1,12 +1,12 @@
 package com.trueque_api.staff.service;
 
-import org.springframework.http.HttpStatus;
+
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.trueque_api.staff.client.OpenAiClient;
 import com.trueque_api.staff.dto.AiListingRequestDTO;
 import com.trueque_api.staff.dto.AiListingResponseDTO;
+import com.trueque_api.staff.exception.BadRequestException;
 import com.trueque_api.staff.exception.NotFoundException;
 import com.trueque_api.staff.repository.UserRepository;
 
@@ -28,10 +28,7 @@ public class AiListingService {
         try {
             return openAiClient.analyzeImage(dto.getImageBase64());
         } catch (Exception e) {
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Não foi possível analisar a imagem"
-            );
+            throw new BadRequestException("Não foi possível analisar a imagem");
         }
     }
 }

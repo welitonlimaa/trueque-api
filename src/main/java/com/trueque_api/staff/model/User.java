@@ -51,4 +51,13 @@ public class User {
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
+
+    public boolean hasRole(String roleName) {
+        return roles.stream()
+                .anyMatch(role -> role.getName().equalsIgnoreCase(roleName));
+    }
+
+    public boolean isAdminOrModerator() {
+        return hasRole("ROLE_ADMIN") || hasRole("ROLE_MODERATOR");
+    }
 }

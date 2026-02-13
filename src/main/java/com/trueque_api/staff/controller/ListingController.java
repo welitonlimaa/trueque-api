@@ -49,9 +49,20 @@ public class ListingController {
     }   
 
     @GetMapping("/{id}")
-    public ResponseEntity<ListingResponseDTO> getById(@PathVariable UUID id) {
-        ListingResponseDTO listing = listingService.getListingById(id);
-        return ResponseEntity.ok(listing);
+    public ResponseEntity<ListingResponseDTO> getById(
+            @PathVariable UUID id,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+
+        String authenticatedEmail = null;
+
+        if (token != null && token.startsWith("Bearer ")) {
+            authenticatedEmail = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+        }
+
+        ListingResponseDTO response =
+                listingService.getListingById(id, authenticatedEmail);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/my")
