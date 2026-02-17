@@ -33,7 +33,7 @@ public class Listing {
     private String state;
 
     @Column(nullable = false)
-    private String status = "ativo";
+    private String status = "pendente";
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
