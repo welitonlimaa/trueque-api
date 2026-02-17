@@ -91,4 +91,16 @@ public class ListingController {
 
         return ResponseEntity.ok(listing);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @PathVariable UUID id,
+            @RequestHeader("Authorization") String token) {
+
+        String authenticatedEmail = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+
+        listingService.deleteListing(id, authenticatedEmail);
+
+        return ResponseEntity.noContent().build();
+    }
 }

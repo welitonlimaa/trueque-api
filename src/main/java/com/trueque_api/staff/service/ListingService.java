@@ -141,6 +141,30 @@ public class ListingService {
         return toResponseDTO(listing);
     }
 
+    public void deleteListing(UUID id, String authenticatedEmail) {
+
+        Listing listing = listingRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Anúncio não encontrado."));
+
+        if (authenticatedEmail == null) {
+            throw new InvalidCredentialsException(
+                    "Você precisa estar autenticado para visualizar este anúncio.");
+        }
+
+        User user = userRepository.findByEmail(authenticatedEmail)
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
+
+        boolean isOwner = listing.getUser().equals(user);
+
+        if (!isOwner && !user.isAdminOrModerator()) {
+            throw new UnauthorizedAccessException(
+                    "Você não tem permissão para deletar este anúncio.");
+        }
+
+        listingRepository.delete(listing);
+    }
+
+
     private ListingResponseDTO toResponseDTO(Listing listing) {
         User user = listing.getUser();
 
