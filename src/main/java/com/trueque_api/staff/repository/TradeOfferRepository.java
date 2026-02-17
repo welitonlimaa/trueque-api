@@ -24,4 +24,12 @@ public interface TradeOfferRepository extends JpaRepository<TradeOffer, UUID> {
     """)
     List<TradeOffer> findAllByListingId(UUID listingId);
 
+    @Query("""
+    SELECT COUNT(t) > 0 FROM TradeOffer t
+    WHERE 
+        (t.offeredListing.id = :offeredId AND t.requestedListing.id = :requestedId)
+        OR
+        (t.offeredListing.id = :requestedId AND t.requestedListing.id = :offeredId)
+    """)
+    boolean existsByListings(UUID offeredId, UUID requestedId);
 }

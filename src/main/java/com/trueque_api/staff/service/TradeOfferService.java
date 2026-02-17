@@ -47,7 +47,16 @@ public class TradeOfferService {
                 .orElseThrow(() -> new NotFoundException("Requested listing not found"));
 
         if (offered.getUser().getId().equals(requested.getUser().getId())) {
-            throw new BadRequestException("Você não pode fazer uma proposta para você mesmo.");
+            throw new BadRequestException(
+                    "Você não pode fazer uma proposta para você mesmo.");
+        }
+
+        boolean alreadyExists = tradeOfferRepository
+                .existsByListings(offered.getId(), requested.getId());
+
+        if (alreadyExists) {
+            throw new BadRequestException(
+                    "Já existe uma oferta envolvendo esses dois anúncios.");
         }
 
         TradeOffer offer = new TradeOffer();
