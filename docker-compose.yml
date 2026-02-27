@@ -1,19 +1,11 @@
-version: '3.8'
+version: "3"
 
 services:
-  db:
-    build:
-      context: ./db
-    container_name: trueque-db
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: trueque_db
+  api:
+    build: .
+    container_name: trueque-api
     ports:
-      - "5432:5432"
-    networks:
-      - trueque-network
-
-networks:
-  trueque-network:
-    driver: bridge
+      - "8080:8080"
+    env_file:
+      - .env
+    restart: always
