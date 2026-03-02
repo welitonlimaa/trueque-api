@@ -51,6 +51,7 @@ public class SecurityConfig {
                     "/auth/login", 
                     "/user/register",
                     "/listings/",
+                    "/health",
                     "/listings/{id}",
                     "/swagger-ui.html",
                     "/swagger-ui/**",
