@@ -28,6 +28,7 @@ jobs:
         working-directory: python/moderation/
         env:
           API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           CONFIDENCE_THRESHOLD: ${{ secrets.CONFIDENCE_THRESHOLD }}
         run: |
