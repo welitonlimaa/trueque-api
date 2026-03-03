@@ -2,8 +2,8 @@ name: Marketplace Moderation
 
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: "0 12 * * *"
+  schedule:
+    - cron: "0 12 * * *"
 
 jobs:
   moderate:
@@ -19,13 +19,13 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        working-directory: python/modetation/
+        working-directory: python/moderation/
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Run moderation script
-        working-directory: python/modetation/
+        working-directory: python/moderation/
         env:
           API_BASE_URL: ${{ secrets.API_BASE_URL }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
