@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import requests
 from openai import OpenAI
 
@@ -91,6 +92,7 @@ def moderate_image(image_url):
     try:
         response = client.responses.create(
             model="gpt-4.1-mini",
+            timeout=15,
             input=[
                 {
                     "role": "user",
@@ -102,7 +104,15 @@ def moderate_image(image_url):
             ],
         )
 
-        result = json.loads(response.output_text)
+        text = response.output_text.strip()
+
+        match = re.search(r"\{.*\}", text, re.DOTALL)
+
+        if not match:
+            raise ModerationError(f"Resposta inválida do modelo: {text}")
+
+        result = json.loads(match.group())
+
         confidence = result["confidence"] if result["safe"] else 0.0
 
         print(f"Imagem score: {confidence}")
