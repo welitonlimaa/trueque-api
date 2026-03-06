@@ -66,9 +66,12 @@ public class ListingController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<List<ListingResponseDTO>> listUserListings(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<List<ListingResponseDTO>> listUserListings(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(required = false) String status
+    ) {
         String authenticatedEmail = jwtUtil.extractEmail(token.replace("Bearer ", ""));
-        List<ListingResponseDTO> listings = listingService.listUserListings(authenticatedEmail);
+        List<ListingResponseDTO> listings = listingService.listUserListings(authenticatedEmail, status);
         return ResponseEntity.ok(listings);
     }
 

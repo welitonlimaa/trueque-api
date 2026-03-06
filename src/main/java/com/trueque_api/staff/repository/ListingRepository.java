@@ -24,4 +24,6 @@ public interface ListingRepository extends JpaRepository<Listing, UUID> {
     Optional<Listing> findByIdForUpdate(@Param("id") UUID id);
 
     List<Listing> findAllByStatus(String status);
+
+    List<Listing> findAllByUserIdAndStatus(UUID userId, String status);
 }

@@ -107,12 +107,20 @@ public class ListingService {
         return toResponseDTO(listing);
     }
 
-    public List<ListingResponseDTO> listUserListings(String authenticatedEmail) {
+    public List<ListingResponseDTO> listUserListings(String authenticatedEmail, String status) {
+
         User user = userRepository.findByEmail(authenticatedEmail)
                 .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
-    
-        return listingRepository.findAllByUserId(user.getId())
-                .stream()
+
+        List<Listing> listings;
+
+        if (status == null || status.isBlank()) {
+            listings = listingRepository.findAllByUserId(user.getId());
+        } else {
+            listings = listingRepository.findAllByUserIdAndStatus(user.getId(), status);
+        }
+
+        return listings.stream()
                 .map(this::toResponseDTO)
                 .toList();
     }
