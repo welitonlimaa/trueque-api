@@ -66,7 +66,7 @@ public class UserService {
             throw new EmailAlreadyExistsException("Este email já está registrado.");
         }
 
-        Role userRole = roleRepository.findByName("USER")
+        Role userRole = roleRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("Role padrão não encontrada."));
 
         User user = new User();
@@ -75,6 +75,8 @@ public class UserService {
         user.setEmail(emailLower);
         user.setPassword(passwordEncoder.encode(userDataDTO.getPassword()));
         user.getRoles().add(userRole);
+        user.setState(userDataDTO.getState());
+        user.setCity(userDataDTO.getCity());
 
         User savedUser = userRepository.save(user);
 
