@@ -9,6 +9,6 @@ public class HealthController {
 
     @GetMapping("/health")
     public ResponseEntity<String> health() {
-        return ResponseEntity.ok("API OK");
+        return ResponseEntity.ok("API Okay");
     }
 }
