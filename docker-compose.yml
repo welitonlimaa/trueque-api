@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-  api:
+  trueque_api:
     build: .
     container_name: trueque-api
     ports:
@@ -9,3 +9,9 @@ services:
     env_file:
       - .env
     restart: always
+    networks:
+      - trueque-network
+
+networks:
+  trueque-network:
+    external: true
