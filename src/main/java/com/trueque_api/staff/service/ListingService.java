@@ -1,7 +1,10 @@
 package com.trueque_api.staff.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trueque_api.staff.dto.ListingRequestDTO;
 import com.trueque_api.staff.dto.ListingResponseDTO;
+import com.trueque_api.staff.dto.SearchListingResponseDTO;
 import com.trueque_api.staff.dto.UserSummaryDTO;
 import com.trueque_api.staff.exception.BadRequestException;
 import com.trueque_api.staff.exception.InvalidCredentialsException;
@@ -16,9 +19,15 @@ import com.trueque_api.staff.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -27,6 +36,9 @@ public class ListingService {
     private final ListingRepository listingRepository;
     private final UserRepository userRepository;
     private final ListingImageRepository listingImageRepository;
+
+    @Value("${elasticsearch.url}")
+    private String elasticBaseUrl;
 
     public ListingService(
         ListingRepository listingRepository, 
@@ -170,6 +182,94 @@ public class ListingService {
         }
 
         listingRepository.delete(listing);
+    }
+
+    public SearchListingResponseDTO searchListings(String query, int page, int size) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+
+            String elasticUrl = elasticBaseUrl + "/" + "itens" + "/_search";
+
+            String body = """
+            {
+            "from": %d,
+            "size": %d,
+            "query": {
+                "multi_match": {
+                "query": "%s",
+                "fields": ["text^2"],
+                "fuzziness": "AUTO"
+                }
+            }
+            }
+            """.formatted(page * size, size, query);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<String> entity = new HttpEntity<>(body, headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    elasticUrl,
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response.getBody());
+
+            JsonNode hits = root.path("hits").path("hits");
+
+            List<UUID> ids = new ArrayList<>();
+            Map<UUID, Double> scoreMap = new HashMap<>();
+
+            for (JsonNode hit : hits) {
+                String idStr = hit.path("_id").asText(null);
+                if (idStr == null) continue;
+
+                try {
+                    UUID id = UUID.fromString(idStr);
+                    double score = hit.path("_score").asDouble(0);
+
+                    ids.add(id);
+                    scoreMap.put(id, score);
+                } catch (IllegalArgumentException ignored) {
+                }
+            }
+
+            if (ids.isEmpty()) {
+                return SearchListingResponseDTO.builder()
+                        .content(List.of())
+                        .page(page)
+                        .totalPages(0)
+                        .totalElements(0)
+                        .build();
+            }
+
+            List<Listing> listings = listingRepository.findAllById(ids);
+
+            listings.sort((a, b) -> Double.compare(
+                    scoreMap.getOrDefault(b.getId(), 0.0),
+                    scoreMap.getOrDefault(a.getId(), 0.0)
+            ));
+
+            List<ListingResponseDTO> content = listings.stream()
+                    .map(this::toResponseDTO)
+                    .toList();
+
+            long total = root.path("hits").path("total").path("value").asLong(0);
+
+            return SearchListingResponseDTO.builder()
+                    .content(content)
+                    .page(page)
+                    .totalPages((int) Math.ceil((double) total / size))
+                    .totalElements(total)
+                    .build();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erro na busca", e);
+        }
     }
 
 

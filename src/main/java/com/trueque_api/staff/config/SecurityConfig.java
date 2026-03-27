@@ -53,6 +53,7 @@ public class SecurityConfig {
                     "/listings/",
                     "/health",
                     "/listings/{id}",
+                    "/listings/search",
                     "/ai/chatbot/query",
                     "/swagger-ui.html",
                     "/swagger-ui/**",

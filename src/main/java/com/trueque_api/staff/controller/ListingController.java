@@ -2,6 +2,7 @@ package com.trueque_api.staff.controller;
 
 import com.trueque_api.staff.dto.ListingRequestDTO;
 import com.trueque_api.staff.dto.ListingResponseDTO;
+import com.trueque_api.staff.dto.SearchListingResponseDTO;
 import com.trueque_api.staff.dto.StatusUpdateRequest;
 import com.trueque_api.staff.service.ListingService;
 
@@ -73,6 +74,17 @@ public class ListingController {
         String authenticatedEmail = jwtUtil.extractEmail(token.replace("Bearer ", ""));
         List<ListingResponseDTO> listings = listingService.listUserListings(authenticatedEmail, status);
         return ResponseEntity.ok(listings);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<SearchListingResponseDTO> search(
+            @RequestParam("q") String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(
+            listingService.searchListings(query, page, size)
+        );
     }
 
     @PatchMapping("/{id}/mark-as-exchanged")
