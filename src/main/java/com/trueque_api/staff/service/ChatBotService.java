@@ -25,11 +25,7 @@ public class ChatBotService {
         this.restTemplate = new RestTemplate();
     }
     
-    public ChatBotQueryResponseDTO queryChatBot(ChatBotQueryRequestDTO dto, String authenticatedEmail) {
-
-        userRepository.findByEmail(authenticatedEmail)
-                .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
-
+    public ChatBotQueryResponseDTO queryChatBot(ChatBotQueryRequestDTO dto) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);

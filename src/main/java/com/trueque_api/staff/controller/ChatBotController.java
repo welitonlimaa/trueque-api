@@ -21,10 +21,8 @@ public class ChatBotController {
 
     @PostMapping("/query")
     public ChatBotQueryResponseDTO query(
-            @RequestBody ChatBotQueryRequestDTO request,
-            @RequestHeader("Authorization") String token
+            @RequestBody ChatBotQueryRequestDTO request
     ) {
-        String authenticatedEmail = jwtUtil.extractEmail(token.replace("Bearer ", ""));
-        return service.queryChatBot(request, authenticatedEmail);
+        return service.queryChatBot(request);
     }
 }
