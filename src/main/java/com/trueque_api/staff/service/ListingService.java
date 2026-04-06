@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ListingService {
@@ -41,9 +42,9 @@ public class ListingService {
     private String elasticBaseUrl;
 
     public ListingService(
-        ListingRepository listingRepository, 
-        UserRepository userRepository, 
-        ListingImageRepository listingImageRepository) 
+        ListingRepository listingRepository,
+        UserRepository userRepository,
+        ListingImageRepository listingImageRepository)
     {
         this.listingRepository = listingRepository;
         this.userRepository = userRepository;
@@ -74,31 +75,25 @@ public class ListingService {
             }
         }
 
-        return toResponseDTO(savedListing);
+        return toResponseDTO(savedListing, fetchImagesForOne(savedListing.getId()));
     }
-
 
     public List<ListingResponseDTO> getAllListings() {
-    List<Listing> listings = listingRepository.findAllByStatus("ativo");
-    return listings.stream()
-                   .map(this::toResponseDTO)
-                   .toList();
+        List<Listing> listings = listingRepository.findAllByStatusWithUser("ativo");
+        return toResponseDTOList(listings);
     }
-    
+
     public List<ListingResponseDTO> getPendingListings() {
-        return listingRepository.findAllByStatus("pendente")
-                .stream()
-                .map(this::toResponseDTO)
-                .toList();
+        List<Listing> listings = listingRepository.findAllByStatusWithUser("pendente");
+        return toResponseDTOList(listings);
     }
 
     public ListingResponseDTO getListingById(UUID id, String authenticatedEmail) {
-
-        Listing listing = listingRepository.findById(id)
+        Listing listing = listingRepository.findByIdWithUser(id)
                 .orElseThrow(() -> new NotFoundException("Anúncio não encontrado."));
 
         if (listing.getStatus().equals("ativo")) {
-            return toResponseDTO(listing);
+            return toResponseDTO(listing, fetchImagesForOne(id));
         }
 
         if (authenticatedEmail == null) {
@@ -116,27 +111,24 @@ public class ListingService {
                     "Você não tem permissão para visualizar este anúncio.");
         }
 
-        return toResponseDTO(listing);
+        return toResponseDTO(listing, fetchImagesForOne(id));
     }
 
     public List<ListingResponseDTO> listUserListings(String authenticatedEmail, String status) {
-
         User user = userRepository.findByEmail(authenticatedEmail)
                 .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
 
         List<Listing> listings;
 
         if (status == null || status.isBlank()) {
-            listings = listingRepository.findAllByUserId(user.getId());
+            listings = listingRepository.findAllByUserIdWithUser(user.getId());
         } else {
-            listings = listingRepository.findAllByUserIdAndStatus(user.getId(), status);
+            listings = listingRepository.findAllByUserIdAndStatusWithUser(user.getId(), status);
         }
 
-        return listings.stream()
-                .map(this::toResponseDTO)
-                .toList();
+        return toResponseDTOList(listings);
     }
-    
+
     @Transactional
     public void markAsExchanged(UUID listingId, String authenticatedEmail) {
         Listing listing = listingRepository.findByIdAndUserEmail(listingId, authenticatedEmail)
@@ -152,18 +144,16 @@ public class ListingService {
 
     @Transactional
     public ListingResponseDTO updateListingStatus(UUID listingId, String newStatus) {
-
-        Listing listing = listingRepository.findById(listingId)
+        Listing listing = listingRepository.findByIdWithUser(listingId)
                 .orElseThrow(() -> new NotFoundException("Anúncio não encontrado."));
 
         listing.setStatus(newStatus);
 
-        return toResponseDTO(listing);
+        return toResponseDTO(listing, fetchImagesForOne(listingId));
     }
 
     public void deleteListing(UUID id, String authenticatedEmail) {
-
-        Listing listing = listingRepository.findById(id)
+        Listing listing = listingRepository.findByIdWithUser(id)
                 .orElseThrow(() -> new NotFoundException("Anúncio não encontrado."));
 
         if (authenticatedEmail == null) {
@@ -188,19 +178,19 @@ public class ListingService {
         try {
             RestTemplate restTemplate = new RestTemplate();
 
-            String elasticUrl = elasticBaseUrl + "/" + "itens" + "/_search";
+            String elasticUrl = elasticBaseUrl + "/itens/_search";
 
             String body = """
             {
-            "from": %d,
-            "size": %d,
-            "query": {
+              "from": %d,
+              "size": %d,
+              "query": {
                 "multi_match": {
-                "query": "%s",
-                "fields": ["text^2"],
-                "fuzziness": "AUTO"
+                  "query": "%s",
+                  "fields": ["text^2"],
+                  "fuzziness": "AUTO"
                 }
-            }
+              }
             }
             """.formatted(page * size, size, query);
 
@@ -231,7 +221,6 @@ public class ListingService {
                 try {
                     UUID id = UUID.fromString(idStr);
                     double score = hit.path("_score").asDouble(0);
-
                     ids.add(id);
                     scoreMap.put(id, score);
                 } catch (IllegalArgumentException ignored) {
@@ -247,16 +236,14 @@ public class ListingService {
                         .build();
             }
 
-            List<Listing> listings = listingRepository.findAllById(ids);
+            List<Listing> listings = listingRepository.findAllByIdsWithUser(ids);
 
             listings.sort((a, b) -> Double.compare(
                     scoreMap.getOrDefault(b.getId(), 0.0),
                     scoreMap.getOrDefault(a.getId(), 0.0)
             ));
 
-            List<ListingResponseDTO> content = listings.stream()
-                    .map(this::toResponseDTO)
-                    .toList();
+            List<ListingResponseDTO> content = toResponseDTOList(listings);
 
             long total = root.path("hits").path("total").path("value").asLong(0);
 
@@ -272,22 +259,40 @@ public class ListingService {
         }
     }
 
+    private List<ListingResponseDTO> toResponseDTOList(List<Listing> listings) {
+        if (listings.isEmpty()) return List.of();
 
-    private ListingResponseDTO toResponseDTO(Listing listing) {
+        List<UUID> listingIds = listings.stream().map(Listing::getId).toList();
+
+        Map<UUID, List<String>> imagesByListingId = listingImageRepository
+                .findByListingIdIn(listingIds)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        img -> img.getListing().getId(),
+                        Collectors.mapping(ListingImage::getImageUrl, Collectors.toList())
+                ));
+
+        return listings.stream()
+                .map(l -> toResponseDTO(l, imagesByListingId.getOrDefault(l.getId(), List.of())))
+                .toList();
+    }
+
+    private List<String> fetchImagesForOne(UUID listingId) {
+        return listingImageRepository.findByListingId(listingId)
+                .stream()
+                .map(ListingImage::getImageUrl)
+                .toList();
+    }
+
+    private ListingResponseDTO toResponseDTO(Listing listing, List<String> imageUrls) {
         User user = listing.getUser();
 
         UserSummaryDTO userSummary = UserSummaryDTO.builder()
-            .id(user.getId())
-            .name(user.getName())
-            .profilePicture(user.getProfilePicture())
-            .build();
+                .id(user.getId())
+                .name(user.getName())
+                .profilePicture(user.getProfilePicture())
+                .build();
 
-        List<ListingImage> listingImages = listingImageRepository.findByListingId(listing.getId());
-    
-        List<String> imageUrls = listingImages.stream()
-                .map(ListingImage::getImageUrl)
-                .toList();
-    
         return ListingResponseDTO.builder()
                 .id(listing.getId())
                 .title(listing.getTitle())
@@ -302,5 +307,4 @@ public class ListingService {
                 .user(userSummary)
                 .build();
     }
-    
 }

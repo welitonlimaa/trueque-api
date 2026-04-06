@@ -26,4 +26,39 @@ public interface ListingRepository extends JpaRepository<Listing, UUID> {
     List<Listing> findAllByStatus(String status);
 
     List<Listing> findAllByUserIdAndStatus(UUID userId, String status);
+
+
+    @Query("""
+        SELECT DISTINCT l FROM Listing l
+        JOIN FETCH l.user
+        WHERE l.status = :status
+    """)
+    List<Listing> findAllByStatusWithUser(@Param("status") String status);
+
+    @Query("""
+        SELECT DISTINCT l FROM Listing l
+        JOIN FETCH l.user
+        WHERE l.user.id = :userId
+    """)
+    List<Listing> findAllByUserIdWithUser(@Param("userId") UUID userId);
+
+    @Query("""
+        SELECT DISTINCT l FROM Listing l
+        JOIN FETCH l.user
+        WHERE l.user.id = :userId AND l.status = :status
+    """)
+    List<Listing> findAllByUserIdAndStatusWithUser(
+        @Param("userId") UUID userId,
+        @Param("status") String status
+    );
+
+    @Query("""
+        SELECT DISTINCT l FROM Listing l
+        JOIN FETCH l.user
+        WHERE l.id = :id
+    """)
+    Optional<Listing> findByIdWithUser(@Param("id") UUID id);
+
+    @Query("SELECT DISTINCT l FROM Listing l JOIN FETCH l.user WHERE l.id IN :ids")
+    List<Listing> findAllByIdsWithUser(@Param("ids") List<UUID> ids);
 }
