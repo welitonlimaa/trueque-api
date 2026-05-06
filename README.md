@@ -14,6 +14,10 @@ Essa abordagem contribui para:
 * Reaproveitamento criativo de recursos
 
 ---
+* Frontend: [https://github.com/welitonlimaa/trueque-frontend](https://github.com/welitonlimaa/trueque-frontend)
+* Backend: [https://github.com/welitonlimaa/trueque-api](https://github.com/welitonlimaa/trueque-api)
+* AiService: [https://github.com/welitonlimaa/trueque-aiservice](https://github.com/welitonlimaa/trueque-aiservice)
+---
 
 ## Tecnologias Utilizadas
 
